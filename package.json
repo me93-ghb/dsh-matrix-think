@@ -1,0 +1,59 @@
+{
+  "name": "dsh-matrix-think",
+  "version": "0.1.0",
+  "description": "Matrix rain for expanded thinking in DeepSeek Harness Web",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "assets/dsh-matrix-think-demo.gif",
+    "assets/dsh-matrix-think-demo.mp4",
+    "lib/client.js",
+    "src/client.ts",
+    "cordis.patch.yml",
+    "README.md",
+    "tsconfig.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "pnpm build && node --test test.cjs",
+    "check": "pnpm build && node --check index.js && node --check lib/client.js && node --test test.cjs",
+    "prepack": "pnpm build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/me93-ghb/dsh-matrix-think.git"
+  },
+  "homepage": "https://github.com/me93-ghb/dsh-matrix-think#readme",
+  "bugs": "https://github.com/me93-ghb/dsh-matrix-think/issues",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "matrix-rain",
+    "reasoning-ui",
+    "cordis"
+  ],
+  "engines": {
+    "node": "^22.19 || >=24"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^30.0.1",
+    "typescript": "^6.0.3"
+  },
+  "packageManager": "pnpm@11.24.0"
+}

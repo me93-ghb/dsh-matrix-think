@@ -65,9 +65,14 @@ function createHarness({ reasoning = 'first streamed tokens', width = 450, rando
   window.HTMLCanvasElement.prototype.getContext = () => context
   window.eval(source)
 
+  let hookState
   const React = {
     createElement(type, props, ...children) {
       return { type, props: { ...props, children } }
+    },
+    useState(initial) {
+      hookState ??= typeof initial === 'function' ? initial() : initial
+      return [hookState, value => { hookState = value }]
     },
   }
   const disposers = []
@@ -79,11 +84,16 @@ function createHarness({ reasoning = 'first streamed tokens', width = 450, rando
     effect(start) { disposers.push(start()) },
     slots: {
       inject(name, register) {
-        assert.equal(name, 'settings.plugin.item')
+        assert.equal(name, 'settings.plugins.tab')
         return register()
       },
       register(options, component) {
-        assert.equal(options.name, 'settings.plugin.item')
+        if (options.name === 'settings.plugin.item' && !options.key) {
+          throw new Error('keyed slot "settings.plugin.item" requires options.key')
+        }
+        assert.equal(options.name, 'settings.plugins.tab')
+        assert.equal(options.id, 'matrix-think')
+        assert.equal(options.label, 'Matrix Think')
         settingsComponent = component
         return () => {}
       },
@@ -128,11 +138,19 @@ test('registers a persistent native Settings switch that controls the rain', asy
   assert.equal(typeof harness.settingsComponent, 'function')
   assert.ok(harness.window.document.querySelector('.dsh-matrix-think-overlay'))
 
-  const input = findElement(harness.settingsComponent(), 'input')
+  let settings = harness.settingsComponent()
+  let input = findElement(settings, 'input')
+  let status = findElement(settings, 'span')
   assert.equal(input.props.role, 'switch')
-  assert.equal(input.props.defaultChecked, true)
+  assert.equal(input.props.checked, true)
+  assert.deepEqual(status.props.children, ['Enabled'])
   input.props.onChange({ currentTarget: { checked: false } })
+  settings = harness.settingsComponent()
+  input = findElement(settings, 'input')
+  status = findElement(settings, 'span')
   assert.equal(harness.window.localStorage.getItem('dsh-matrix-think.enabled'), '0')
+  assert.equal(input.props.checked, false)
+  assert.deepEqual(status.props.children, ['Disabled'])
   assert.equal(harness.window.document.querySelector('.dsh-matrix-think-overlay'), null)
 
   input.props.onChange({ currentTarget: { checked: true } })

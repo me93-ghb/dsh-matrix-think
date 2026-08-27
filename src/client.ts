@@ -2,7 +2,7 @@ interface ClientContext {
   effect(start: () => () => void, label: string): void
   slots: {
     inject(name: string, register: () => () => void): () => void
-    register(options: { name: string; id: string; order: number }, component: () => unknown): () => void
+    register(options: { name: string; id: string; order: number; label: string }, component: () => unknown): () => void
   }
 }
 
@@ -14,6 +14,7 @@ interface ClientPlugin {
 
 interface ReactLike {
   createElement(type: string, props?: Record<string, unknown> | null, ...children: unknown[]): unknown
+  useState<T>(initial: T | (() => T)): [T, (value: T) => void]
 }
 
 interface Window {
@@ -147,9 +148,11 @@ window.__ModuleLoader__.load({
       for (const controller of controllers) controller(enabled)
     }
 
-    function SettingsCard() {
+    function SettingsTab() {
+      const [enabled, setEnabledState] = React.useState(isEnabled)
+
       return React.createElement(
-        'li',
+        'div',
         { className: 'dsh-matrix-think-settings' },
         React.createElement(
           'div',
@@ -164,13 +167,16 @@ window.__ModuleLoader__.load({
         React.createElement(
           'label',
           { className: 'dsh-matrix-think-settings-toggle' },
-          React.createElement('span', null, 'Enabled'),
+          React.createElement('span', null, enabled ? 'Enabled' : 'Disabled'),
           React.createElement('input', {
             type: 'checkbox',
             role: 'switch',
             'aria-label': 'Enable Matrix Think',
-            defaultChecked: isEnabled(),
-            onChange: (event: { currentTarget: HTMLInputElement }) => setEnabled(event.currentTarget.checked),
+            checked: enabled,
+            onChange: (event: { currentTarget: HTMLInputElement }) => {
+              setEnabled(event.currentTarget.checked)
+              setEnabledState(event.currentTarget.checked)
+            },
           }),
         ),
       )
@@ -183,12 +189,12 @@ window.__ModuleLoader__.load({
 
     function apply(ctx: ClientContext) {
       ctx.effect(() => ctx.slots.inject(
-        'settings.plugin.item',
+        'settings.plugins.tab',
         () => ctx.slots.register(
-          { name: 'settings.plugin.item', id: 'matrix-think', order: 100 },
-          SettingsCard,
+          { name: 'settings.plugins.tab', id: 'matrix-think', order: 100, label: 'Matrix Think' },
+          SettingsTab,
         ),
-      ), 'matrix-think: settings card')
+      ), 'matrix-think: settings tab')
 
       ctx.effect(() => {
         const style = document.createElement('style')

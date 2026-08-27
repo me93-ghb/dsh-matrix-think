@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # Matrix Think for DSH
 
 Matrix Think for DSH turns expanded Think output in DeepSeek Harness Web into digital rain made from the live reasoning text.
